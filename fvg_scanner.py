@@ -24,7 +24,7 @@ APPROACH_DIST      = float(os.getenv("APPROACH_DIST","20"))   # alert when 20pts
 MIN_SCORE          = int(os.getenv("MIN_SCORE",      "4"))    # minimum zone score
 MAX_DAILY          = int(os.getenv("MAX_DAILY",      "8"))    # max signals per day
 
-SYMBOLS = ["XAU/USD", "XAG/USD"]
+SYMBOLS = ["XAU/USD", "XAG/USD", "BTC/USD"]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
@@ -172,13 +172,13 @@ def zone_alert(symbol: str, zone: dict):
 
     text = (
         f"{stars} *NEW 30M FVG ZONE — {sym}*\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"{emoji} *Type:* {typ}\n"
         f"📊 *Zone:* ${zone['bot']} — ${zone['top']}\n"
         f"🎯 *50% Level:* ${zone['mid']}\n"
         f"⭐ *Score:* {zone['score']}/9\n"
         f"✅ *Confluences:* {', '.join(zone['reasons']) if zone['reasons'] else 'Base FVG'}\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"_Watch for price to return to this zone_\n"
         f"_Entry alert will fire at 50% level_"
     )
@@ -192,12 +192,12 @@ def approach_alert(symbol: str, zone: dict, price: float, dist: float):
 
     text = (
         f"⚠️ *APPROACHING ZONE — {sym}*\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"{emoji} *{typ} FVG*\n"
         f"📍 *Zone:* ${zone['bot']} — ${zone['top']}\n"
         f"💰 *Current Price:* ${round(price, 2)}\n"
         f"📏 *Distance:* {round(dist, 1)} pts away\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"_Get ready — entry alert coming soon_"
     )
     notify(text)
@@ -217,7 +217,7 @@ def entry_signal(symbol: str, zone: dict, price: float):
 
     text = (
         f"{emoji} *{sym} — {direction}* {emoji}\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"📍 *Setup:* 30M FVG {typ}\n"
         f"⚡ *Type:* MARKET ORDER\n\n"
         f"💰 *Entry:* `${round(price, 2)}`\n"
@@ -225,7 +225,7 @@ def entry_signal(symbol: str, zone: dict, price: float):
         f"✅ *TP1:* `${tp1}`\n"
         f"✅ *TP2:* `${tp2}`\n"
         f"⚖️ *R:R:* 1:2\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"⚠️ _Not financial advice. Risk max 1-2%._\n"
         f"_{now}_"
     )
@@ -251,19 +251,19 @@ def tp_hit_msg(trade: dict, tp_level: str):
     if tp_level == "TP1":
         text = (
             f"*TRADE UPDATE — {sym}*\n"
-            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"\n"
             f"TP1 SMASHED 🚀\n\n"
             f"✅ Move Stop Loss to entry — trade is now *risk free*\n"
             f"📊 Let it run to TP2\n"
-            f"━━━━━━━━━━━━━━━━━━━━"
+            f""
         )
     else:
         text = (
             f"*TRADE UPDATE — {sym}*\n"
-            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"\n"
             f"TP2 HIT 🔥 +{pts} pts\n\n"
             f"💰 Consider closing or trailing stop\n"
-            f"━━━━━━━━━━━━━━━━━━━━"
+            f""
         )
     notify(text)
 
@@ -273,11 +273,11 @@ def result_msg(trade: dict, result: str, exit_price: float):
     win  = result == "WIN"
     text = (
         f"{'✅ WIN' if win else '❌ LOSS'} — *{sym} {trade['direction']}*\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"*Entry:* ${trade['entry']}\n"
         f"*Exit:* ${exit_price}\n"
         f"*Result:* {'+'if win else '-'}{pts} pts\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"\n"
         f"_Not financial advice_"
     )
     notify(text)
