@@ -375,15 +375,42 @@ def scan(symbol: str):
                 approach_alert(symbol, zone, price, dist)
                 approached[zone_id] = True
 
-            # Entry signal at 50%
+            # Entry signal — at or past 50% WITH rejection candle confirmed
             if at_50 and not open_trade and daily_signals < MAX_DAILY and in_session():
-                trade = entry_signal(symbol, zone, price)
-                open_trade    = trade
-                daily_signals += 1
-                active_zones[symbol].remove(zone)
-                if zone_id in approached:
-                    del approached[zone_id]
-                break
+                # Fetch 1M candles to check for rejection
+                try:
+                    df_1m  = fetch(symbol, "1min", 10)
+                    last_c = df_1m.iloc[-1]
+                    prev_c = df_1m.iloc[-2]
+                    body   = abs(last_c.close - last_c.open)
+                    rng    = max(last_c.high - last_c.low, 0.0001)
+
+                    # Bearish rejection for sell zone
+                    bear_eng  = last_c.close < last_c.open and prev_c.close > prev_c.open and last_c.close < prev_c.open
+                    shooting  = last_c.close < last_c.open and (last_c.high - last_c.open) >= body * 1.5
+                    bear_pin  = last_c.close < last_c.open and (last_c.high - last_c.open) > rng * 0.5
+                    bear_rej  = bear_eng or shooting or bear_pin
+
+                    # Bullish rejection for buy zone
+                    bull_eng  = last_c.close > last_c.open and prev_c.close < prev_c.open and last_c.close > prev_c.open
+                    hammer    = last_c.close > last_c.open and (last_c.open - last_c.low) >= body * 1.5
+                    bull_pin  = last_c.close > last_c.open and (last_c.open - last_c.low) > rng * 0.5
+                    bull_rej  = bull_eng or hammer or bull_pin
+
+                    confirmed = (zone["type"] == "BEARISH" and bear_rej) or (zone["type"] == "BULLISH" and bull_rej)
+
+                    if confirmed:
+                        trade = entry_signal(symbol, zone, price)
+                        open_trade    = trade
+                        daily_signals += 1
+                        active_zones[symbol].remove(zone)
+                        if zone_id in approached:
+                            del approached[zone_id]
+                        break
+                    else:
+                        log.info(f"At 50% but no rejection candle yet — waiting")
+                except Exception as e:
+                    log.error(f"Rejection check error: {e}")
 
             # Invalidate zone if price closes through it
             if typ == "BEARISH" and price > zone["top"] + 5:
