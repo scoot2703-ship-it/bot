@@ -24,7 +24,7 @@ APPROACH_DIST      = float(os.getenv("APPROACH_DIST","20"))   # alert when 20pts
 MIN_SCORE          = int(os.getenv("MIN_SCORE",      "4"))    # minimum zone score
 MAX_DAILY          = int(os.getenv("MAX_DAILY",      "8"))    # max signals per day
 
-SYMBOLS = ["XAU/USD", "XAG/USD", "BTC/USD"]
+SYMBOLS = ["XAU/USD", "XAG/USD"]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
